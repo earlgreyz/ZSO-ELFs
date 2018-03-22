@@ -5,23 +5,41 @@
 #include <stdint.h>
 
 // Available syscalls
-#define SYSCALL_END       0x00
-#define SYSCALL_GETRAND   0x01
-#define SYSCALL_GETKEY    0x02
-#define SYSCALL_PRINT     0x03
-#define SYSCALL_SETCURSOR 0x04
+#define SYSCALL_END        0x00
+#define SYSCALL_GETRAND    0x01
+#define SYSCALL_GETKEY     0x02
+#define SYSCALL_PRINT      0x03
+#define SYSCALL_SETCURSOR  0x04
 
 // Arrow key codes
-#define KEY_ENTER         0x0a
-#define KEY_ASCII_FIRST   0x20
-#define KEY_ASCII_LAST    0x7e
-#define KEY_UP            0x80
-#define KEY_LEFT          0x81
-#define KEY_DOWN          0x82
-#define KEY_RIGHT         0x83
+#define KEY_ENTER          0x0a
+#define KEY_ASCII_FIRST    0x20
+#define KEY_ASCII_LAST     0x7e
+#define KEY_UP             0x80
+#define KEY_LEFT           0x81
+#define KEY_DOWN           0x82
+#define KEY_RIGHT          0x83
 
 // .pt_params section address
-#define PT_PARAMS   0x60031337
+#define PT_PARAMS    0x60031337
+
+// AlienOS colors
+#define CLR_BLACK          0x00
+#define CLR_BLUE           0x01
+#define CLR_GREEN          0x02
+#define CLR_TURQUOISE      0x03
+#define CLR_RED            0x04
+#define CLR_PINK           0x05
+#define CLR_YELLOW         0x06
+#define CLR_LIT_GREY       0x07
+#define CLR_DRK_GREY       0x08
+#define CLR_LIT_BLUE       0x09
+#define CLR_LIT_GREEN      0x0a
+#define CLR_LIT_TURQUOISE  0x0b
+#define CLR_LIT_RED        0x0c
+#define CLR_LIT_PINK       0x0d
+#define CLR_LIT_YELLOW     0x0e
+#define CLR_WHITE          0x0f
 
 /// End program with given status.
 /// Invoked via SYSCALL_END call.
