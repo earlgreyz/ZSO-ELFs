@@ -44,17 +44,17 @@
 /// End program with given status.
 /// Invoked via SYSCALL_END call.
 /// \param status exit code.
-void end(int status);
+void sys_end(int status);
 
 /// Generates random integer value.
 /// Invoked via SYSCALL_GETRAND call.
 /// \return random value.
-uint32_t getrand(void);
+uint32_t sys_getrand(void);
 
 /// Blocks program execution until a key is pressed.
 /// Invoked via SYSCALL_GETKEY call.
 /// \return pressed key code.
-int getkey(void);
+int sys_getkey(void);
 
 /// Prints a list of characters to the screen.
 /// Invoked via SYSCALL_PRINT call.
@@ -62,13 +62,13 @@ int getkey(void);
 /// \param y starting y position.
 /// \param chars list of characters to be printed.
 /// \param n length of the characters list.
-void print(int x, int y, uint16_t *chars, int n);
+void sys_print(int x, int y, uint16_t *chars, int n);
 
 /// Moves the cursor to the position.
 /// Invoked via SYSCALL_SETCURSOR call.
 /// \param x new x position.
 /// \param y new y position.
-void setcursor(int x, int y);
+void sys_setcursor(int x, int y);
 
 
 #endif // ALIENOS_H

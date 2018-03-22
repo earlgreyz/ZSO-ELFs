@@ -3,4 +3,4 @@ project(ZSO_ELFs C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(ZSO_ELFs main.c alienos.c)
+add_executable(ZSO_ELFs main.c alienos.c emulator.c emulator.h)
