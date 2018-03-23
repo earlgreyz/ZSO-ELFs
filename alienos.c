@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "alienos.h"
 
 #include <stdlib.h>
@@ -5,8 +6,8 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
+// For some reason it's not found in the headers
 #define SYS_getrandom 318
-
 
 // Extract symbol from an alien character
 #define CHAR_SYM(c) ((c) & 0x00ff)
