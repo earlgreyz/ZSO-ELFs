@@ -13,8 +13,6 @@
 
 // Key codes
 #define OSKEY_ENTER          0x0a
-#define OSKEY_ASCII_FIRST    0x20
-#define OSKEY_ASCII_LAST     0x7e
 #define OSKEY_UP             0x80
 #define OSKEY_LEFT           0x81
 #define OSKEY_DOWN           0x82
@@ -40,6 +38,14 @@
 #define CLR_LIT_PINK       0x0d
 #define CLR_LIT_YELLOW     0x0e
 #define CLR_WHITE          0x0f
+
+/// Starts AlienOS window mode.
+/// \return (OK|ERR)
+int start_window(void);
+
+/// Ends AlienOS window mode.
+/// \return (OK|ERR)
+int end_window(void);
 
 /// End program with given status.
 /// Invoked via SYSCALL_END call.

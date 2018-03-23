@@ -14,9 +14,56 @@
 // Extract color from an alien character
 #define CHAR_SYM(c) ((c) & 0x00ff)
 
+// Init color or return from function with ERR
+#define INIT_CLR(color, r, g, b) \
+    if (init_color(color, r, g, b) != OK) \
+        return ERR;
+
+static int initialize_colors() {
+    if (has_colors() == FALSE) {
+        return ERR;
+    }
+    start_color();
+
+    INIT_CLR(CLR_BLACK, 0, 0, 0)
+    INIT_CLR(CLR_BLUE, 0, 0, 1000)
+    INIT_CLR(CLR_GREEN, 0, 1000, 0)
+    INIT_CLR(CLR_TURQUOISE, 250, 900, 800)
+    INIT_CLR(CLR_RED, 1000, 0, 0)
+    INIT_CLR(CLR_PINK, 1000, 100, 500)
+    INIT_CLR(CLR_YELLOW, 1000, 1000, 0)
+    INIT_CLR(CLR_LIT_GREY, 300, 300, 300)
+    INIT_CLR(CLR_DRK_GREY, 600, 600, 600)
+    INIT_CLR(CLR_LIT_BLUE, 500, 700, 1000)
+    INIT_CLR(CLR_LIT_GREEN, 500, 1000, 500)
+    INIT_CLR(CLR_LIT_TURQUOISE, 500, 900, 800)
+    INIT_CLR(CLR_LIT_RED, 1000, 500, 500)
+    INIT_CLR(CLR_LIT_PINK, 1000, 800, 800)
+    INIT_CLR(CLR_LIT_YELLOW, 1000, 1000, 500)
+    INIT_CLR(CLR_WHITE, 1000, 1000, 1000)
+
+    for (short i = 0; i <= 0x0f; i++) {
+        init_pair(i, i, CLR_BLACK); // TODO: handle err
+    }
+
+    refresh();
+    return OK;
+}
+
+int start_window(void) {
+    // TODO: Check return codes.
+    initscr();
+    noecho();
+    return initialize_colors();
+}
+
+int end_window(void) {
+    return endwin();
+}
+
+
 void sys_end(int status) {
-    endwin();
-    fprintf(stderr, "sys_end called with status %d\n", status);
+    end_window();
     exit(status);
 }
 
@@ -29,26 +76,25 @@ uint32_t sys_getrand(void) {
 }
 
 int sys_getkey(void) {
-    int c =  getch();
-    switch (c) {
+    int key =  getch();
+    switch (key) {
         case KEY_ENTER: return OSKEY_ENTER;
         case KEY_UP: return OSKEY_UP;
         case KEY_LEFT: return OSKEY_LEFT;
         case KEY_RIGHT: return OSKEY_RIGHT;
         case KEY_DOWN: return OSKEY_DOWN;
-        default:
-            break;
+        default: return key;
     }
-    return c;
 }
-
 void sys_print(int x, int y, uint16_t *chars, int n) {
     int oldy, oldx;
     getyx(stdscr, oldy, oldx);
+
     move(y, x); // TODO: handle error
     for (uint16_t * c = chars; c < chars + n; c++) {
         addch(CHAR_SYM(*c) | COLOR_PAIR(CHAR_COL(*c))); // TODO: handle error
     }
+
     move(oldy, oldx);
 }
 
