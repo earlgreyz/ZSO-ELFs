@@ -11,15 +11,6 @@
 #define SYSCALL_PRINT      0x03
 #define SYSCALL_SETCURSOR  0x04
 
-// Arrow key codes
-#define KEY_ENTER          0x0a
-#define KEY_ASCII_FIRST    0x20
-#define KEY_ASCII_LAST     0x7e
-#define KEY_UP             0x80
-#define KEY_LEFT           0x81
-#define KEY_DOWN           0x82
-#define KEY_RIGHT          0x83
-
 // .pt_params section address
 #define PT_PARAMS    0x60031337
 

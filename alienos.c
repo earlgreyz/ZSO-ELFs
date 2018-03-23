@@ -1,7 +1,12 @@
 #include "alienos.h"
+
 #include <stdlib.h>
 #include <curses.h>
-#include <sys/random.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+
+#define SYS_getrandom 318
+
 
 // Extract symbol from an alien character
 #define CHAR_SYM(c) ((c) & 0x00ff)
@@ -14,11 +19,10 @@ void sys_end(int status) {
 
 uint32_t sys_getrand(void) {
     uint32_t value = 0;
-    if (getrandom(&value, sizeof(value), NULL) == -1) {
-        // This is the best we can do to signalise error.
+    if (syscall(SYS_getrandom, &value, sizeof(value), NULL) == -1) {
         return (uint32_t)(-1);
     }
-    return value;
+    return 4;
 }
 
 int sys_getkey(void) {

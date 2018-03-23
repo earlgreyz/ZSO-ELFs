@@ -11,9 +11,17 @@
 
 #include <signal.h>
 #include <unistd.h>
+#include <sys/errno.h>
 
 #include "alienos.h"
 #include "emulator.h"
+
+#include<sys/reg.h>
+#include<sys/user.h>
+#include<sys/syscall.h>
+#include<string.h>
+#include<stdlib.h>
+#include <errno.h>
 
 static int alienos_program(int argc, char **argv) {
     ptrace(PTRACE_TRACEME, 0, NULL, NULL);
@@ -32,8 +40,12 @@ static void check_or_fail(int err, const char * message) {
     }
 }
 
-static int emulator(pid_t program) {
+static int emulator(pid_t pid) {
     int err, status, syscall_nr;
+    int x, y, n, key;
+    uint16_t *chars;
+    uint32_t rand;
+    struct user_regs_struct regs;
 
     initscr();
     if (initialize_emulator() != 0) {
@@ -41,60 +53,53 @@ static int emulator(pid_t program) {
         endwin();
         exit(1);
     }
+    fprintf(stderr, "Wait for fork\n");
+
+    wait(&status);
+    ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+    fprintf(stderr, "After exec\n");
 
     do {
-        if (wait(&status) == -1 || WIFEXITED(status)) {
+        pid = wait(&status);
+        if (pid == -1 || WIFEXITED(status)) {
             fprintf(stderr, "AlienOS program finished\n");
             endwin();
             return 0;
         }
 
         if (WSTOPSIG(status) == SIGTRAP) {
-            syscall_nr = ptrace(PTRACE_PEEKDATA, program, ORIG_RAX, NULL);
-            fprintf(stderr, "AlienOS program syscalled %d\n", syscall_nr);
+            err = ptrace(PTRACE_GETREGS, pid, NULL, &regs);
+            fprintf(stderr, "AlienOS program syscalled %d\n", regs.orig_rax);
 
-            switch (syscall_nr) {
+            switch (regs.orig_rax) {
                 case SYSCALL_END:
-                    err = ptrace(PTRACE_PEEKDATA, program, ORIG_RDI, NULL);
-                    sys_end(err);
+                    sys_end(regs.rdi);
                     break;
                 case SYSCALL_GETRAND:
-                    uint32_t rand = sys_getrand();
-                    err = ptrace(PTRACE_POKEDATA, program, ORIG_RAX, rand);
+                    regs.rax = sys_getrand();
+                    err = ptrace(PTRACE_SETREGS, pid, NULL, &regs);
                     check_or_fail(err, "getrand");
                     break;
                 case SYSCALL_GETKEY:
-                    int key = sys_getkey();
-                    err = ptrace(PTRACE_POKEDATA, program, ORIG_RAX, key);
+                    regs.rax = sys_getkey();
+                    err = ptrace(PTRACE_SETREGS, pid, NULL, &regs);
                     check_or_fail(err, "getkey");
                     break;
                 case SYSCALL_PRINT:
-                    int x = ptrace(PTRACE_PEEKDATA, program, ORIG_RDI, NULL);
-                    check_or_fail(x, "print (x)");
-                    int y = ptrace(PTRACE_PEEKDATA, program, ORIG_RSI, NULL);
-                    check_or_fail(y, "print (y)");
-                    uint16_t *chars = ptrace(PTRACE_PEEKDATA, program, ORIG_RDX, NULL);
-                    check_or_fail((int) chars, "print (chars)");
-                    int n = ptrace(PTRACE_PEEKDATA, program, ORIG_R10, NULL);
-                    check_or_fail((int) chars, "print (n)");
-                    sys_print(x, y, chars, n);
+                    sys_print(regs.rdi, regs.rsi, regs.rdx, regs.r10);
                     refresh();
                     break;
                 case SYSCALL_SETCURSOR:
-                    int x = ptrace(PTRACE_PEEKDATA, program, ORIG_RDI, NULL);
-                    check_or_fail(x, "print (x)");
-                    int y = ptrace(PTRACE_PEEKDATA, program, ORIG_RSI, NULL);
-                    check_or_fail(y, "print (y)");
-                    sys_setcursor(x, y);
+                    sys_setcursor(regs.rdi, regs.rsi);
                     refresh();
                     break;
                 default:
-                    fprintf(stderr, "Invalid syscall %d\n", syscall_nr);
+                    fprintf(stderr, "Invalid syscall %d\n", regs.orig_rax);
                     endwin();
                     return 127;
             }
 
-            ptrace(PTRACE_SYSEMU, program, NULL, NULL);
+            ptrace(PTRACE_SYSEMU, pid, NULL, NULL);
         }
 
     } while (1);
