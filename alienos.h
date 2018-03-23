@@ -11,6 +11,15 @@
 #define SYSCALL_PRINT      0x03
 #define SYSCALL_SETCURSOR  0x04
 
+// Key codes
+#define OSKEY_ENTER          0x0a
+#define OSKEY_ASCII_FIRST    0x20
+#define OSKEY_ASCII_LAST     0x7e
+#define OSKEY_UP             0x80
+#define OSKEY_LEFT           0x81
+#define OSKEY_DOWN           0x82
+#define OSKEY_RIGHT          0x83
+
 // .pt_params section address
 #define PT_PARAMS    0x60031337
 

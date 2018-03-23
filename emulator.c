@@ -12,6 +12,7 @@
 #include <sys/reg.h>
 #include <sys/user.h>
 #include <sys/syscall.h>
+#include <sys/prctl.h>
 
 #include "alienos.h"
 
@@ -55,18 +56,19 @@ static int initialize_colors() {
 
 static void check_or_fail(int err, const char * message) {
     if (err != 0 && errno) {
-        fprintf(stderr, message);
         endwin();
+        fprintf(stderr, message);
         exit(EXIT_FAILURE);
     }
 }
 
 static void emulate_syscall(pid_t pid) {
     int err;
+    uint16_t chars[512];
     struct user_regs_struct regs;
+    char x, y;
 
     err = ptrace(PTRACE_GETREGS, pid, NULL, &regs);
-    fprintf(stderr, "AlienOS program syscalled %d\n", regs.orig_rax);
 
     switch (regs.orig_rax) {
         case SYSCALL_END:
@@ -83,7 +85,13 @@ static void emulate_syscall(pid_t pid) {
             check_or_fail(err, "getkey");
             break;
         case SYSCALL_PRINT:
-            sys_print(regs.rdi, regs.rsi, (uint16_t *)regs.rdx, regs.r10);
+            for (int i = 0; i < regs.r10; i++) {
+                err = ptrace(PTRACE_PEEKTEXT, pid, regs.rdx + sizeof(uint16_t) * i, NULL);
+                check_or_fail(err, "print");
+                *(chars + i) = (uint16_t) err;
+            }
+
+            sys_print(regs.rdi, regs.rsi, chars, regs.r10);
             refresh();
             break;
         case SYSCALL_SETCURSOR:
@@ -91,8 +99,8 @@ static void emulate_syscall(pid_t pid) {
             refresh();
             break;
         default:
-            fprintf(stderr, "Invalid syscall %d\n", regs.orig_rax);
             endwin();
+            fprintf(stderr, "Invalid syscall %d\n", regs.orig_rax);
             exit(127);
     }
 
@@ -103,6 +111,7 @@ void run_emulator(pid_t pid) {
     int status, err;
 
     initscr();
+    noecho();
 
     if (initialize_colors() != OK) {
         endwin();
@@ -110,7 +119,6 @@ void run_emulator(pid_t pid) {
         exit(EXIT_FAILURE);
     }
 
-    // Wait for exec
     wait(&status);
     ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
 
@@ -129,6 +137,7 @@ void run_emulator(pid_t pid) {
 }
 
 void run_program(int argc, char *argv[]) {
+    prctl(PR_SET_PDEATHSIG, SIGHUP);
     ptrace(PTRACE_TRACEME, 0, NULL, NULL);
     if (execv(argv[0], argv) == -1) {
         fprintf(stderr, "Unable to exec %s\n", argv[0]);
