@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
-// For some reason it's not found in the headers
+// For some reason it's not found in the unistd.h
 #define SYS_getrandom 318
 
 // Extract symbol from an alien character
@@ -53,14 +53,17 @@ static int initialize_colors() {
 int start_window(void) {
     // TODO: Check return codes.
     initscr();
+    keypad(stdscr, TRUE);
     noecho();
     return initialize_colors();
 }
 
 int end_window(void) {
-    return endwin();
+    // TODO: Check return codes.
+    endwin();
+    reset_shell_mode();
+    return OK;
 }
-
 
 void sys_end(int status) {
     end_window();
@@ -86,13 +89,15 @@ int sys_getkey(void) {
         default: return key;
     }
 }
+
 void sys_print(int x, int y, uint16_t *chars, int n) {
     int oldy, oldx;
     getyx(stdscr, oldy, oldx);
 
     move(y, x); // TODO: handle error
     for (uint16_t * c = chars; c < chars + n; c++) {
-        addch(CHAR_SYM(*c) | COLOR_PAIR(CHAR_COL(*c))); // TODO: handle error
+        const chtype symbol = (chtype) CHAR_SYM(*c) | (chtype) COLOR_PAIR(CHAR_COL(*c));
+        addch(symbol); // TODO: handle error
     }
 
     move(oldy, oldx);

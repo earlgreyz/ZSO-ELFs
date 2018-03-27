@@ -66,7 +66,7 @@ static int emulate_print(pid_t pid, struct user_regs_struct *regs) {
     free(buffer);
 }
 
-static int emulate_setcursor(pid_t pid, struct user_regs_struct *regs) {
+static void emulate_setcursor(pid_t pid, struct user_regs_struct *regs) {
     sys_setcursor(regs->rdi, regs->rsi);
     refresh();
 }
