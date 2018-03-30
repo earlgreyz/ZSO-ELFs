@@ -12,7 +12,6 @@
 #define SYSCALL_SETCURSOR  0x04
 
 // Key codes
-#define OSKEY_ENTER          0x0a
 #define OSKEY_UP             0x80
 #define OSKEY_LEFT           0x81
 #define OSKEY_DOWN           0x82
@@ -20,32 +19,6 @@
 
 // .pt_params section address
 #define PT_PARAMS    0x60031337
-
-// AlienOS colors
-#define CLR_BLACK          0x00
-#define CLR_BLUE           0x01
-#define CLR_GREEN          0x02
-#define CLR_TURQUOISE      0x03
-#define CLR_RED            0x04
-#define CLR_PINK           0x05
-#define CLR_YELLOW         0x06
-#define CLR_LIT_GREY       0x07
-#define CLR_DRK_GREY       0x08
-#define CLR_LIT_BLUE       0x09
-#define CLR_LIT_GREEN      0x0a
-#define CLR_LIT_TURQUOISE  0x0b
-#define CLR_LIT_RED        0x0c
-#define CLR_LIT_PINK       0x0d
-#define CLR_LIT_YELLOW     0x0e
-#define CLR_WHITE          0x0f
-
-/// Starts AlienOS window mode.
-/// \return (OK|ERR)
-int start_window(void);
-
-/// Ends AlienOS window mode.
-/// \return (OK|ERR)
-int end_window(void);
 
 /// End program with given status.
 /// Invoked via SYSCALL_END call.

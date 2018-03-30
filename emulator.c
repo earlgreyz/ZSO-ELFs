@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <curses.h>
 #include <signal.h>
 #include <unistd.h>
 
@@ -14,7 +13,13 @@
 #include <sys/syscall.h>
 #include <sys/prctl.h>
 
+#include "graphics.h"
 #include "alienos.h"
+
+static void end_window() {
+    echo();
+    clear_screen();
+}
 
 static void fail(const char * message) {
     end_window();
@@ -29,6 +34,7 @@ static void fail_when_err(int err, const char *message) {
 }
 
 static void emulate_end(pid_t pid, struct user_regs_struct *regs) {
+    end_window();
     sys_end(regs->rdi);
 }
 
@@ -61,14 +67,11 @@ static int emulate_print(pid_t pid, struct user_regs_struct *regs) {
     }
 
     sys_print(regs->rdi, regs->rsi, buffer, regs->r10);
-    refresh();
-
     free(buffer);
 }
 
 static void emulate_setcursor(pid_t pid, struct user_regs_struct *regs) {
     sys_setcursor(regs->rdi, regs->rsi);
-    refresh();
 }
 
 static void emulate_syscall(pid_t pid) {
@@ -103,9 +106,8 @@ static void emulate_syscall(pid_t pid) {
 void run_emulator(pid_t pid) {
     int status;
 
-    if (start_window() != OK) {
-        fail("Unable to start AlienOS window");
-    }
+    clear_screen();
+    no_echo();
 
     // Allow the tracee to execve.
     wait(&status);

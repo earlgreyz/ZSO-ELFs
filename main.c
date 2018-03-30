@@ -4,10 +4,8 @@
 
 #include "emulator.h"
 
-
 int main(int argc, char *argv[]) {
     pid_t pid;
-
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <program>\n", argv[0]);
         return EXIT_FAILURE;
