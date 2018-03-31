@@ -7,5 +7,8 @@
 #define SYS_getrandom 318
 
 ssize_t getrandom(void *buf, size_t buflen, unsigned int flags) {
-    return syscall(SYS_getrandom, buf, buflen, flags) == -1 ? 1 : 0;
+    if (syscall(SYS_getrandom, buf, buflen, flags) == -1) {
+        return 1;
+    }
+    return 0;
 }

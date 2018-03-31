@@ -1,7 +1,6 @@
 #ifndef ALIENOS_H
 #define ALIENOS_H
 
-
 #include <stdint.h>
 
 // Available syscalls
@@ -56,6 +55,5 @@ void sys_print(int x, int y, uint16_t *chars, int n);
 /// \param x new x position.
 /// \param y new y position.
 void sys_setcursor(int x, int y);
-
 
 #endif // ALIENOS_H

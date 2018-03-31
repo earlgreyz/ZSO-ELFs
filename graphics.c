@@ -5,10 +5,6 @@
     if ((err = (x)) != OK) \
         return err;
 
-#define INIT_CLR(color, r, g, b) \
-    if (init_color(color, r, g, b) != OK) \
-        return CHECK_ERR;
-
 static int saved_x, saved_y;
 
 static int start_colors(void) {
@@ -17,6 +13,8 @@ static int start_colors(void) {
     if (has_colors() == FALSE) {
         return ERR;
     }
+
+    start_color();
 
     CHECK_ERR(init_color(CLR_BLACK, 0, 0, 0))
     CHECK_ERR(init_color(CLR_BLUE, 0, 0, 1000))
@@ -35,7 +33,7 @@ static int start_colors(void) {
     CHECK_ERR(init_color(CLR_LIT_YELLOW, 1000, 1000, 500))
     CHECK_ERR(init_color(CLR_WHITE, 1000, 1000, 1000))
 
-    for (short i = 0x00; i <= 0x0f; i++) {
+    for (short i = 0x50; i <= 0x5f; i++) {
         CHECK_ERR(init_pair(i, i, CLR_BLACK))
     }
 
@@ -45,7 +43,7 @@ static int start_colors(void) {
 
 int start_window(void) {
     int err;
-    CHECK_ERR(initscr())
+    initscr();
     CHECK_ERR(start_colors())
     CHECK_ERR(keypad(stdscr, TRUE))
     CHECK_ERR(noecho())
@@ -68,7 +66,11 @@ int move_cursor(int x, int y) {
 }
 
 int save_cursor(void) {
-    return getyx(stdscr, saved_y, saved_x);
+    getyx(stdscr, saved_y, saved_x);
+    if (saved_y == -1 && saved_x == -1) {
+        return ERR;
+    }
+    return OK;
 }
 
 int restore_cursor(void) {
@@ -76,7 +78,7 @@ int restore_cursor(void) {
 }
 
 int print_character(char character, short color) {
-    return addch(character| COLOR_PAIR(color));
+    return addch(character| COLOR_PAIR(0x50 + color));
 }
 
 int get_key(void) {
