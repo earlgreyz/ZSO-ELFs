@@ -20,6 +20,14 @@
 // .pt_params section address
 #define PT_PARAMS    0x60031337
 
+/// Starts AlienOS window mode.
+/// \return (OK|ERR)
+int start_alienos(void);
+
+/// Ends AlienOS window mode
+/// \return (OK|ERR)
+int end_alienos(void);
+
 /// End program with given status.
 /// Invoked via SYSCALL_END call.
 /// \param status exit code.

@@ -5,4 +5,4 @@
 
 ssize_t getrandom(void *buf, size_t buflen, unsigned int flags);
 
-#endif
+#endif // ZSO_ELFS_RANDOM_H

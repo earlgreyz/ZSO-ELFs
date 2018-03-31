@@ -1,9 +1,11 @@
 #include "emulator.h"
+#include "alienos.h"
 
 #include <stdio.h>
 #include <errno.h>
 #include <signal.h>
 #include <unistd.h>
+#include <ncurses.h>
 
 #include <sys/ptrace.h>
 #include <asm/ptrace.h>
@@ -13,16 +15,8 @@
 #include <sys/syscall.h>
 #include <sys/prctl.h>
 
-#include "graphics.h"
-#include "alienos.h"
-
-static void end_window() {
-    echo();
-    clear_screen();
-}
-
 static void fail(const char * message) {
-    end_window();
+    end_alienos();
     fprintf(stderr, message);
     exit(EXIT_FAILURE);
 }
@@ -34,7 +28,6 @@ static void fail_when_err(int err, const char *message) {
 }
 
 static void emulate_end(pid_t pid, struct user_regs_struct *regs) {
-    end_window();
     sys_end(regs->rdi);
 }
 
@@ -97,7 +90,7 @@ static void emulate_syscall(pid_t pid) {
             emulate_setcursor(pid, &regs);
             break;
         default:
-            end_window();
+            end_alienos();
             fprintf(stderr, "Invalid syscall %d\n", regs.orig_rax);
             exit(127);
     }
@@ -105,9 +98,7 @@ static void emulate_syscall(pid_t pid) {
 
 void run_emulator(pid_t pid) {
     int status;
-
-    clear_screen();
-    no_echo();
+    start_alienos();
 
     // Allow the tracee to execve.
     wait(&status);
@@ -116,8 +107,8 @@ void run_emulator(pid_t pid) {
     do {
         pid = wait(&status);
         if (pid == -1 || WIFEXITED(status)) {
-            end_window();
-            exit(EXIT_SUCCESS);
+            end_alienos();
+            exit(status);
         } else if (WSTOPSIG(status) == SIGTRAP) {
             emulate_syscall(pid);
             ptrace(PTRACE_SYSEMU, pid, NULL, NULL);

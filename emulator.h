@@ -1,5 +1,5 @@
-#ifndef EMULATOR_H
-#define EMULATOR_H
+#ifndef ZSO_ELFS_EMULATOR_H
+#define ZSO_ELFS_EMULATOR_H
 
 #include <stdlib.h>
 #include <sys/types.h>
@@ -15,4 +15,4 @@ void run_emulator(pid_t pid);
 void run_program(int argc, char *argv[]);
 
 
-#endif // EMULATOR_H
+#endif // ZSO_ELFS_EMULATOR_H

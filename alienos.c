@@ -3,74 +3,59 @@
 #include "graphics.h"
 
 #include <stdlib.h>
-#include <stdio.h>
+#include <curses.h>
 
 // Extract symbol from an alien character
 #define CHAR_COL(c) (((c) & 0x0f00) >> 8)
 // Extract color from an alien character
 #define CHAR_SYM(c) ((c) & 0x00ff)
 
-static const char *colors[16] = {
-        FMT(FOREGROUND_COL_BLACK),
-        FMT(GEN_FORMAT_BRIGHT";"FOREGROUND_COL_BLUE),
-        FMT(GEN_FORMAT_BRIGHT";"FOREGROUND_COL_GREEN),
-        FMT(GEN_FORMAT_BRIGHT";"FOREGROUND_COL_CYAN),
-        FMT(GEN_FORMAT_BRIGHT";"FOREGROUND_COL_RED),
-        FMT(GEN_FORMAT_BRIGHT";"FOREGROUND_COL_MAGENTA),
-        FMT(GEN_FORMAT_BRIGHT";"FOREGROUND_COL_YELLOW),
-        FMT(GEN_FORMAT_DIM";"FOREGROUND_COL_WHITE),
-        FMT(GEN_FORMAT_BRIGHT";"FOREGROUND_COL_BLACK),
-        FMT(GEN_FORMAT_DIM";"FOREGROUND_COL_BLUE),
-        FMT(GEN_FORMAT_DIM";"FOREGROUND_COL_GREEN),
-        FMT(GEN_FORMAT_DIM";"FOREGROUND_COL_CYAN),
-        FMT(GEN_FORMAT_DIM";"FOREGROUND_COL_RED),
-        FMT(GEN_FORMAT_DIM";"FOREGROUND_COL_MAGENTA),
-        FMT(GEN_FORMAT_DIM";"FOREGROUND_COL_YELLOW),
-        FMT(FOREGROUND_COL_WHITE)
-};
+// Execute without error or exit with error
+#define MUST(x) if ((x) != 0) exit(EXIT_FAILURE);
+
+int start_alienos(void) {
+    return start_window();
+}
+
+int end_alienos(void) {
+    return end_window();
+}
 
 void sys_end(int status) {
+    (void) end_window();
     exit(status);
 }
 
 uint32_t sys_getrand(void) {
     uint32_t value = 0;
-    if (getrandom(&value, sizeof(value), 0) == -1) {
-        return (uint32_t)(-1);
-    }
+    MUST(getrandom(&value, sizeof(value), 0))
     return value;
 }
 
 int sys_getkey(void) {
-    int key = getchar();
-    if (key == 27) {
-        key = getchar();
-        if (key != 91) {
-            return key;
-        }
-        key = getchar();
-        switch (key) {
-            case 'A': return OSKEY_UP;
-            case 'B': return OSKEY_DOWN;
-            case 'C': return OSKEY_RIGHT;
-            case 'D': return OSKEY_LEFT;
-            default: return key;
-        }
+    int key = get_key();
+    switch (key) {
+        case KEY_DOWN: return OSKEY_DOWN;
+        case KEY_UP: return OSKEY_UP;
+        case KEY_LEFT: return OSKEY_LEFT;
+        case KEY_RIGHT: return OSKEY_RIGHT;
+        default: return key;
     }
-    return key;
 }
 
 void sys_print(int x, int y, uint16_t *chars, int n) {
-    save_cursor();
-    move_cursor(x, y);
+    MUST(save_cursor())
+    MUST(move_cursor(x, y))
+
     for (uint16_t * c = chars; c < chars + n; c++) {
-        fputs(colors[CHAR_COL(*c)], stdout);
-        printf("%c", CHAR_SYM(*c));
-        fputs(NO_FMT, stdout);
+        MUST(print_character(CHAR_SYM(*c), CHAR_COL(*c)))
     }
-    restore_cursor();
+
+    MUST(restore_cursor())
+    MUST(refresh_window())
 }
 
 void sys_setcursor(int x, int y) {
-    move_cursor(x, y);
+    MUST(move_cursor(x, y))
+    MUST(refresh_window())
 }
