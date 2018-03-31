@@ -3,18 +3,19 @@
 #include <unistd.h>
 
 #include "emulator.h"
+#include "alienos.h"
 
 int main(int argc, char *argv[]) {
     pid_t pid;
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <program>\n", argv[0]);
-        return EXIT_FAILURE;
+        return EXIT_ALIENOS_FAIL;
     }
 
     switch (pid = fork()) {
         case -1:
             fprintf(stderr, "Failed to fork\n");
-            return EXIT_FAILURE;
+            return EXIT_ALIENOS_FAIL;
         case 0:
             run_program(argc - 1, argv + 1);
         default:

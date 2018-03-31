@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define EXIT_ALIENOS_FAIL   127
+
 // Available syscalls
 #define SYSCALL_END        0x00
 #define SYSCALL_GETRAND    0x01
@@ -11,10 +13,10 @@
 #define SYSCALL_SETCURSOR  0x04
 
 // Key codes
-#define OSKEY_UP             0x80
-#define OSKEY_LEFT           0x81
-#define OSKEY_DOWN           0x82
-#define OSKEY_RIGHT          0x83
+#define OSKEY_UP           0x80
+#define OSKEY_LEFT         0x81
+#define OSKEY_DOWN         0x82
+#define OSKEY_RIGHT        0x83
 
 // .pt_params section address
 #define PT_PARAMS    0x60031337

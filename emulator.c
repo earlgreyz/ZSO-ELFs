@@ -15,13 +15,12 @@
 #include <sys/syscall.h>
 #include <sys/prctl.h>
 
-#define EXIT_INVALID_INSTR 127
 #define IS_PTRACE_ERR(x) ((x) == -1 && errno)
 
 static void emulation_failure(const char *message) {
     end_alienos();
     fprintf(stderr, message);
-    exit(EXIT_FAILURE);
+    exit(EXIT_ALIENOS_FAIL);
 }
 
 static void emulate_end(pid_t pid, struct user_regs_struct *regs) {
@@ -95,7 +94,7 @@ static void emulate_syscall(pid_t pid) {
         default:
             end_alienos();
             fprintf(stderr, "Invalid syscall %d\n", regs.orig_rax);
-            exit(EXIT_INVALID_INSTR);
+            exit(EXIT_ALIENOS_FAIL);
     }
 }
 
@@ -130,16 +129,16 @@ void run_program(int argc, char *argv[]) {
     // Die when parent is killed.
     if (prctl(PR_SET_PDEATHSIG, SIGHUP) == -1) {
         fprintf(stderr, "PR_SET_PDEATHSIG");
-        exit(EXIT_FAILURE);
+        exit(EXIT_ALIENOS_FAIL);
     }
 
     if (IS_PTRACE_ERR(ptrace(PTRACE_TRACEME, 0, NULL, NULL))) {
         fprintf(stderr, "PTRACE_TRACEME");
-        exit(EXIT_FAILURE);
+        exit(EXIT_ALIENOS_FAIL);
     }
 
     if (execv(argv[0], argv) == -1) {
         fprintf(stderr, "Unable to exec %s\n", argv[0]);
-        exit(EXIT_FAILURE);
+        exit(EXIT_ALIENOS_FAIL);
     }
 }

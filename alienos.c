@@ -11,7 +11,7 @@
 #define CHAR_SYM(c) ((c) & 0x00ff)
 
 // Execute without error or exit with error
-#define MUST(x) if ((x) != 0) sys_end(EXIT_FAILURE);
+#define MUST(x) if ((x) != 0) sys_end(EXIT_ALIENOS_FAIL);
 
 int start_alienos(void) {
     return start_window();
