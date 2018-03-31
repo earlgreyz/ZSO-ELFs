@@ -78,7 +78,7 @@ int restore_cursor(void) {
 }
 
 int print_character(char character, short color) {
-    return addch(character| COLOR_PAIR(0x50 + color));
+    return addch((chtype) character | (chtype) COLOR_PAIR(0x50 + color));
 }
 
 int get_key(void) {

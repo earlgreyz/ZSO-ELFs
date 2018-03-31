@@ -6,9 +6,9 @@
 #include <curses.h>
 
 // Extract symbol from an alien character
-#define CHAR_COL(c) (((c) & 0x0f00) >> 8)
+#define CHAR_COL(c) (short) (((c) & 0x0f00) >> 8)
 // Extract color from an alien character
-#define CHAR_SYM(c) ((c) & 0x00ff)
+#define CHAR_SYM(c) (char) ((c) & 0x00ff)
 
 // Execute without error or exit with error
 #define MUST(x) if ((x) != 0) sys_end(EXIT_ALIENOS_FAIL);
@@ -48,7 +48,7 @@ void sys_print(int x, int y, uint16_t *chars, int n) {
     MUST(move_cursor(x, y))
 
     for (uint16_t * c = chars; c < chars + n; c++) {
-        MUST(print_character(CHAR_SYM(*c), CHAR_COL(*c)))
+        MUST(print_character(CHAR_SYM(*c), CHAR_COL(*c)));
     }
 
     MUST(restore_cursor())

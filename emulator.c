@@ -19,38 +19,36 @@
 
 static void emulation_failure(const char *message) {
     end_alienos();
-    fprintf(stderr, message);
+    fprintf(stderr, "%s\n", message);
     exit(EXIT_ALIENOS_FAIL);
 }
 
-static void emulate_end(pid_t pid, struct user_regs_struct *regs) {
-    sys_end(regs->rdi);
+static void emulate_end(__attribute__((unused)) pid_t pid, struct user_regs_struct *regs) {
+    sys_end((int) regs->rdi);
 }
 
 static void emulate_getrand(pid_t pid, struct user_regs_struct *regs) {
     regs->rax = sys_getrand();
-    int err = ptrace(PTRACE_SETREGS, pid, NULL, regs);
-    if (IS_PTRACE_ERR(err)) {
+    if (IS_PTRACE_ERR(ptrace(PTRACE_SETREGS, pid, NULL, regs))) {
         emulation_failure("PTRACE_SETREGS");
     }
 }
 
 static void emulate_getkey(pid_t pid, struct user_regs_struct *regs) {
-    regs->rax = sys_getkey();
-    int err = ptrace(PTRACE_SETREGS, pid, NULL, regs);
-    if (IS_PTRACE_ERR(err)) {
+    regs->rax = (long long unsigned int) sys_getkey();
+    if (IS_PTRACE_ERR(ptrace(PTRACE_SETREGS, pid, NULL, regs))) {
         emulation_failure("PTRACE_SETREGS");
     }
 }
 
-static int emulate_print(pid_t pid, struct user_regs_struct *regs) {
-    int result;
+static void emulate_print(pid_t pid, struct user_regs_struct *regs) {
+    long result;
     uint16_t * buffer = (uint16_t *)malloc(sizeof(uint16_t) * regs->r10);
     if (buffer == NULL) {
         emulation_failure("malloc");
     }
 
-    for (int i = 0; i < regs->r10; i++) {
+    for (size_t i = 0; i < (size_t) regs->r10; i++) {
         result = ptrace(PTRACE_PEEKTEXT, pid, regs->rdx + sizeof(uint16_t) * i, NULL);
         if (IS_PTRACE_ERR(result)) {
             free(buffer);
@@ -59,18 +57,18 @@ static int emulate_print(pid_t pid, struct user_regs_struct *regs) {
         *(buffer + i) = (uint16_t) result;
     }
 
-    sys_print(regs->rdi, regs->rsi, buffer, regs->r10);
+    sys_print((int) regs->rdi, (int) regs->rsi, buffer, (int) regs->r10);
     free(buffer);
 }
 
-static void emulate_setcursor(pid_t pid, struct user_regs_struct *regs) {
-    sys_setcursor(regs->rdi, regs->rsi);
+static void emulate_setcursor(__attribute__((unused)) pid_t pid, struct user_regs_struct *regs) {
+    sys_setcursor((int) regs->rdi, (int) regs->rsi);
 }
 
 static void emulate_syscall(pid_t pid) {
     struct user_regs_struct regs;
 
-    int err = ptrace(PTRACE_GETREGS, pid, NULL, &regs);
+    long err = ptrace(PTRACE_GETREGS, pid, NULL, &regs);
     if (IS_PTRACE_ERR(err)) {
         emulation_failure("PTRACE_GETREGS");
     }
@@ -93,21 +91,20 @@ static void emulate_syscall(pid_t pid) {
             break;
         default:
             end_alienos();
-            fprintf(stderr, "Invalid syscall %d\n", regs.orig_rax);
+            fprintf(stderr, "Invalid syscall %llu\n", regs.orig_rax);
             exit(EXIT_ALIENOS_FAIL);
     }
 }
 
 void run_emulator(pid_t pid) {
-    int status, err;
+    int status;
     if (start_alienos() != 0) {
         emulation_failure("Unable to start AlienOS emulator");
     }
 
     // Allow the tracee to execve.
     (void) wait(&status);
-    err = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-    if (IS_PTRACE_ERR(err)) {
+    if (IS_PTRACE_ERR(ptrace(PTRACE_SYSCALL, pid, NULL, NULL))) {
         emulation_failure("PTRACE_SYSCALL");
     }
 
@@ -117,8 +114,7 @@ void run_emulator(pid_t pid) {
             sys_end(status);
         } else if (WSTOPSIG(status) == SIGTRAP) {
             emulate_syscall(pid);
-            err = ptrace(PTRACE_SYSEMU, pid, NULL, NULL);
-            if (IS_PTRACE_ERR(err)) {
+            if (IS_PTRACE_ERR(ptrace(PTRACE_SYSEMU, pid, NULL, NULL))) {
                 emulation_failure("PTRACE_SYSEMU");
             }
         }
@@ -128,12 +124,12 @@ void run_emulator(pid_t pid) {
 void run_program(int argc, char *argv[]) {
     // Die when parent is killed.
     if (prctl(PR_SET_PDEATHSIG, SIGHUP) == -1) {
-        fprintf(stderr, "PR_SET_PDEATHSIG");
+        fprintf(stderr, "PR_SET_PDEATHSIG\n");
         exit(EXIT_ALIENOS_FAIL);
     }
 
     if (IS_PTRACE_ERR(ptrace(PTRACE_TRACEME, 0, NULL, NULL))) {
-        fprintf(stderr, "PTRACE_TRACEME");
+        fprintf(stderr, "PTRACE_TRACEME\n");
         exit(EXIT_ALIENOS_FAIL);
     }
 
