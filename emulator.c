@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "emulator.h"
 #include "alienos.h"
 
@@ -14,8 +15,11 @@
 #include <sys/user.h>
 #include <sys/syscall.h>
 #include <sys/prctl.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #define IS_PTRACE_ERR(x) ((x) == -1 && errno)
+#define SUCCESS_OR_RET(x) if ((x) == -1) return -1;
 
 static void emulation_failure(const char *message) {
     end_alienos();
@@ -41,20 +45,32 @@ static void emulate_getkey(pid_t pid, struct user_regs_struct *regs) {
     }
 }
 
+static int read_memory(pid_t pid, void *buffer, size_t buffer_len, off_t address) {
+    int fd;
+    char file[64];
+
+    SUCCESS_OR_RET(sprintf(file, "/proc/%ld/mem", (long) pid))
+    SUCCESS_OR_RET(fd = open(file, O_RDWR))
+
+    if (pread(fd, buffer, buffer_len, address) != (ssize_t) buffer_len) {
+        (void) close(fd);
+        return -1;
+    }
+
+    SUCCESS_OR_RET(close(fd))
+    return 0;
+}
+
 static void emulate_print(pid_t pid, struct user_regs_struct *regs) {
-    long result;
-    uint16_t * buffer = (uint16_t *)malloc(sizeof(uint16_t) * regs->r10);
+    size_t buffer_len = sizeof(uint16_t) * regs->r10;
+    uint16_t * buffer = (uint16_t *) malloc(buffer_len);
     if (buffer == NULL) {
         emulation_failure("malloc");
     }
 
-    for (size_t i = 0; i < (size_t) regs->r10; i++) {
-        result = ptrace(PTRACE_PEEKTEXT, pid, regs->rdx + sizeof(uint16_t) * i, NULL);
-        if (IS_PTRACE_ERR(result)) {
-            free(buffer);
-            emulation_failure("PTRACE_PEEKTEXT");
-        }
-        *(buffer + i) = (uint16_t) result;
+    if (read_memory(pid, buffer, buffer_len, (off_t) regs->rdx) == -1) {
+        free(buffer);
+        emulation_failure("read_memory");
     }
 
     sys_print((int) regs->rdi, (int) regs->rsi, buffer, (int) regs->r10);

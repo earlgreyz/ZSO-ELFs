@@ -48,7 +48,7 @@ void sys_print(int x, int y, uint16_t *chars, int n) {
     MUST(move_cursor(x, y))
 
     for (uint16_t * c = chars; c < chars + n; c++) {
-        MUST(print_character(CHAR_SYM(*c), CHAR_COL(*c)));
+        MUST(print_character(CHAR_SYM(*c), (short) (0x50 + CHAR_COL(*c))));
     }
 
     MUST(restore_cursor())

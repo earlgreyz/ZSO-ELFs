@@ -8,7 +8,7 @@
 int main(int argc, char *argv[]) {
     pid_t pid;
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s <program>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <program> <...args>\n", argv[0]);
         return EXIT_ALIENOS_FAIL;
     }
 
