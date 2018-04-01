@@ -35,11 +35,16 @@ uint32_t sys_getrand(void) {
 int sys_getkey(void) {
     int key = get_key();
     switch (key) {
-        case KEY_DOWN: return OSKEY_DOWN;
-        case KEY_UP: return OSKEY_UP;
-        case KEY_LEFT: return OSKEY_LEFT;
-        case KEY_RIGHT: return OSKEY_RIGHT;
-        default: return key;
+        case KEY_DOWN:
+            return OSKEY_DOWN;
+        case KEY_UP:
+            return OSKEY_UP;
+        case KEY_LEFT:
+            return OSKEY_LEFT;
+        case KEY_RIGHT:
+            return OSKEY_RIGHT;
+        default:
+            return key;
     }
 }
 
@@ -47,7 +52,7 @@ void sys_print(int x, int y, uint16_t *chars, int n) {
     MUST(save_cursor())
     MUST(move_cursor(x, y))
 
-    for (uint16_t * c = chars; c < chars + n; c++) {
+    for (uint16_t *c = chars; c < chars + n; c++) {
         MUST(print_character(CHAR_SYM(*c), (short) (0x50 + CHAR_COL(*c))));
     }
 

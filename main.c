@@ -17,8 +17,8 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Failed to fork\n");
             return EXIT_ALIENOS_FAIL;
         case 0:
-            run_program(argc - 1, argv + 1);
+            run_program(argv[1]);
         default:
-            run_emulator(pid);
+            run_emulator(pid, argc - 1, argv + 1);
     }
 }

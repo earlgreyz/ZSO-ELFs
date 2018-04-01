@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+
 #include "emulator.h"
 #include "alienos.h"
 
@@ -63,7 +64,7 @@ static int read_memory(pid_t pid, void *buffer, size_t buffer_len, off_t address
 
 static void emulate_print(pid_t pid, struct user_regs_struct *regs) {
     size_t buffer_len = sizeof(uint16_t) * regs->r10;
-    uint16_t * buffer = (uint16_t *) malloc(buffer_len);
+    uint16_t *buffer = (uint16_t *) malloc(buffer_len);
     if (buffer == NULL) {
         emulation_failure("malloc");
     }
@@ -112,7 +113,7 @@ static void emulate_syscall(pid_t pid) {
     }
 }
 
-void run_emulator(pid_t pid) {
+void run_emulator(pid_t pid, int argc, char *argv[]) {
     int status;
     if (start_alienos() != 0) {
         emulation_failure("Unable to start AlienOS emulator");
@@ -137,7 +138,9 @@ void run_emulator(pid_t pid) {
     } while (1);
 }
 
-void run_program(int argc, char *argv[]) {
+void run_program(char *program) {
+    char *const argv[] = {NULL};
+
     // Die when parent is killed.
     if (prctl(PR_SET_PDEATHSIG, SIGHUP) == -1) {
         fprintf(stderr, "PR_SET_PDEATHSIG\n");
@@ -149,8 +152,8 @@ void run_program(int argc, char *argv[]) {
         exit(EXIT_ALIENOS_FAIL);
     }
 
-    if (execv(argv[0], argv) == -1) {
-        fprintf(stderr, "Unable to exec %s\n", argv[0]);
+    if (execv(program, argv) == -1) {
+        fprintf(stderr, "Unable to exec %s\n", program);
         exit(EXIT_ALIENOS_FAIL);
     }
 }
