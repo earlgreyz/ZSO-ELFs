@@ -19,8 +19,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#define IS_ERR(x) ((x) == -1)
 #define IS_PTRACE_ERR(x) ((x) == -1 && errno)
-#define SUCCESS_OR_RET(x) if ((x) == -1) return -1;
+// Execute successfully or exit immediately
+#define MUST(x) if (IS_ERR(x)) return -1;
 
 static void emulation_failure(const char *message) {
     end_alienos();
@@ -33,7 +35,12 @@ static void emulate_end(__attribute__((unused)) pid_t pid, struct user_regs_stru
 }
 
 static void emulate_getrand(pid_t pid, struct user_regs_struct *regs) {
-    regs->rax = sys_getrand();
+    uint32_t value;
+    if (IS_ERR(sys_getrand(&value))) {
+        emulation_failure("sys_getrand");
+    }
+    regs->rax = value;
+
     if (IS_PTRACE_ERR(ptrace(PTRACE_SETREGS, pid, NULL, regs))) {
         emulation_failure("PTRACE_SETREGS");
     }
@@ -50,15 +57,15 @@ static int read_memory(pid_t pid, void *buffer, size_t buffer_len, off_t address
     int fd;
     char file[64];
 
-    SUCCESS_OR_RET(sprintf(file, "/proc/%ld/mem", (long) pid))
-    SUCCESS_OR_RET(fd = open(file, O_RDWR))
+    MUST(sprintf(file, "/proc/%ld/mem", (long) pid))
+    MUST(fd = open(file, O_RDWR))
 
     if (pread(fd, buffer, buffer_len, address) != (ssize_t) buffer_len) {
         (void) close(fd);
         return -1;
     }
 
-    SUCCESS_OR_RET(close(fd))
+    MUST(close(fd))
     return 0;
 }
 
@@ -74,12 +81,17 @@ static void emulate_print(pid_t pid, struct user_regs_struct *regs) {
         emulation_failure("read_memory");
     }
 
-    sys_print((int) regs->rdi, (int) regs->rsi, buffer, (int) regs->r10);
+    if (IS_ERR(sys_print((int) regs->rdi, (int) regs->rsi, buffer, (int) regs->r10))) {
+        free(buffer);
+        emulation_failure("sys_print");
+    }
     free(buffer);
 }
 
 static void emulate_setcursor(__attribute__((unused)) pid_t pid, struct user_regs_struct *regs) {
-    sys_setcursor((int) regs->rdi, (int) regs->rsi);
+    if (IS_ERR(sys_setcursor((int) regs->rdi, (int) regs->rsi))) {
+        emulation_failure("sys_setcursor");
+    }
 }
 
 static void emulate_syscall(pid_t pid) {

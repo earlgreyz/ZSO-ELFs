@@ -10,8 +10,8 @@
 // Extract color from an alien character
 #define CHAR_SYM(c) (char) ((c) & 0x00ff)
 
-// Execute without error or exit with error
-#define MUST(x) if ((x) != 0) sys_end(EXIT_ALIENOS_FAIL);
+// Execute successfully or exit immediately
+#define MUST(x) if ((x) != OK) return -1;
 
 int start_alienos(void) {
     return start_window();
@@ -26,10 +26,11 @@ void sys_end(int status) {
     exit(status);
 }
 
-uint32_t sys_getrand(void) {
-    uint32_t value = 0;
-    MUST(getrandom(&value, sizeof(value), 0))
-    return value;
+int sys_getrand(uint32_t *value) {
+    if (getrandom(value, sizeof(uint32_t), 0) != sizeof(uint32_t)) {
+        return -1;
+    }
+    return 0;
 }
 
 int sys_getkey(void) {
@@ -48,7 +49,7 @@ int sys_getkey(void) {
     }
 }
 
-void sys_print(int x, int y, uint16_t *chars, int n) {
+int sys_print(int x, int y, uint16_t *chars, int n) {
     MUST(save_cursor())
     MUST(move_cursor(x, y))
 
@@ -58,9 +59,11 @@ void sys_print(int x, int y, uint16_t *chars, int n) {
 
     MUST(restore_cursor())
     MUST(refresh_window())
+    return 0;
 }
 
-void sys_setcursor(int x, int y) {
+int sys_setcursor(int x, int y) {
     MUST(move_cursor(x, y))
     MUST(refresh_window())
+    return 0;
 }
