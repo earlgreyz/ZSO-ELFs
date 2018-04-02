@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "emulator.h"
-#include "alienos.h"
+#include "emulator/emulator.h"
+#include "emulator/alienos.h"
 
 int main(int argc, char *argv[]) {
     pid_t pid;
