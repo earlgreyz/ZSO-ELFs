@@ -14,7 +14,10 @@
 #define IS_ERR(x) ((x) == -1)
 #define IS_PTRACE_ERR(x) ((x) == -1 && errno)
 
-void emulation_failure(struct alien_proc_struct *child, const char *message) {
+/// Immediately stops the program execution cleans up and prints the error message.
+/// \param child alien process tracer data.
+/// \param message error message.
+static void emulation_failure(struct alien_proc_struct *child, const char *message) {
     close(child->mem);
     end_alienos();
     fprintf(stderr, "%s\n", message);
@@ -95,5 +98,9 @@ void emulate_syscall(struct alien_proc_struct *child) {
             break;
         default:
             emulation_failure(child, "unknown syscall");
+    }
+
+    if (IS_PTRACE_ERR(ptrace(PTRACE_SYSEMU, child->pid, NULL, NULL))) {
+        emulation_failure(child, "PTRACE_SYSEMU");
     }
 }

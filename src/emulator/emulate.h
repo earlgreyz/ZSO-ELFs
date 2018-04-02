@@ -1,7 +1,7 @@
 #ifndef ZSO_ELFS_EMULATE_H
 #define ZSO_ELFS_EMULATE_H
-#define _GNU_SOURCE
 
+#define _GNU_SOURCE
 #include <unistd.h>
 
 #include <sys/reg.h>
@@ -12,11 +12,6 @@ struct alien_proc_struct {
     pid_t pid;
     int mem;
 };
-
-/// Immediately stops the program execution cleans up and prints the error message.
-/// \param child alien process tracer data.
-/// \param message error message.
-void emulation_failure(struct alien_proc_struct *child, const char *message);
 
 /// Emulates sys_end syscall.
 /// \param child alien process tracer data.

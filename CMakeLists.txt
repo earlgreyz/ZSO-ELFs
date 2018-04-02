@@ -7,5 +7,5 @@ set(CMAKE_C_STANDARD 11)
 find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
 
-add_executable(emu src/main.c src/emulator/alienos.c src/emulator/emulator.c src/system/random.c src/graphics/graphics.c src/system/convert.c src/emulator/emulate.c)
+add_executable(emu src/main.c src/emulator/alienos.c src/emulator/emulator.c src/system/random.c src/graphics/graphics.c src/system/convert.c src/emulator/emulate.c src/system/memory.c src/emulator/params.c)
 target_link_libraries(emu ${CURSES_LIBRARIES})
