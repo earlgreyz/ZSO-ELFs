@@ -18,7 +18,7 @@
 #define OSKEY_DOWN         0x82
 #define OSKEY_RIGHT        0x83
 
-// .pt_params section address
+// .pt_params section type
 #define PT_PARAMS    0x60031337
 
 /// Starts AlienOS window mode.

@@ -2,6 +2,7 @@
 
 #include "emulator.h"
 #include "alienos.h"
+#include "convert.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -139,12 +140,36 @@ static void emulate_syscall(struct alien_proc_struct *child) {
     }
 }
 
-static int map_child_mem(pid_t pid) {
+/// Opens child memory descriptor
+/// \param child alien process tracer data.
+/// \return descriptor of the child process memory or error (-1)
+static int open_proc_mem(struct alien_proc_struct *child) {
     char file[64];
-    if (sprintf(file, "/proc/%ld/mem", (long) pid) == -1) {
+    if (sprintf(file, "/proc/%ld/mem", (long) child->pid) == -1) {
         return -1;
     }
-    return open(file, O_RDWR);
+    child->mem_fd = open(file, O_RDWR);
+    return child->mem_fd;
+}
+
+/// Initializes arguments in AlienOS process memory.
+/// \param child alien process tracer data.
+/// \param argc arguments count.
+/// \param argv argument values.
+/// \return init status (OK|ERR)
+static int init_args(struct alien_proc_struct *child, int argc, char *argv[]) {
+    int arg;
+    off_t params = 0x3133a6fc;
+
+    for (int i = 1; i < argc; i++) {
+        if (IS_ERR(str_to_int(argv[i], &arg))) {
+            return -1;
+        }
+        if (pwrite(child->mem_fd, &arg, sizeof(arg), params + (i - 1) * sizeof(int)) != (ssize_t) sizeof(arg)) {
+            return -1;
+        }
+    }
+    return 0;
 }
 
 void run_emulator(pid_t pid, int argc, char *argv[]) {
@@ -155,15 +180,22 @@ void run_emulator(pid_t pid, int argc, char *argv[]) {
         system_failure("Unable to start AlienOS emulator");
     }
 
-    // Allow the tracee to execve.
-    (void) wait(&status);
+    // Wait for child to stop on EXECVE
+    pid = wait(&status);
+    if (pid == -1 || WIFEXITED(status)) {
+        system_failure("AlienOS processed finished before execve");
+    }
+
     if (IS_PTRACE_ERR(ptrace(PTRACE_SYSCALL, pid, NULL, NULL))) {
         system_failure("PTRACE_SYSCALL");
     }
 
-    // Open tracee memory
-    if (IS_ERR(child.mem_fd = map_child_mem(pid))) {
-        system_failure("map_child_mem");
+    if (IS_ERR(open_proc_mem(&child))) {
+        system_failure("open_proc_mem");
+    }
+
+    if (IS_ERR(init_args(&child, argc, argv))) {
+        emulation_failure(&child, "init_args");
     }
 
     do {

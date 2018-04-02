@@ -1,9 +1,7 @@
 #include "graphics.h"
 #include <curses.h>
 
-#define CHECK_ERR(x) \
-    if ((err = (x)) != OK) \
-        return err;
+#define MUST(x) if ((err = (x)) != OK) return err;
 
 static int saved_x, saved_y;
 
@@ -16,44 +14,44 @@ static int start_colors(void) {
 
     start_color();
 
-    CHECK_ERR(init_color(CLR_BLACK, 0, 0, 0))
-    CHECK_ERR(init_color(CLR_BLUE, 0, 0, 1000))
-    CHECK_ERR(init_color(CLR_GREEN, 0, 1000, 0))
-    CHECK_ERR(init_color(CLR_TURQUOISE, 250, 900, 800))
-    CHECK_ERR(init_color(CLR_RED, 1000, 0, 0))
-    CHECK_ERR(init_color(CLR_PINK, 1000, 100, 500))
-    CHECK_ERR(init_color(CLR_YELLOW, 1000, 1000, 0))
-    CHECK_ERR(init_color(CLR_LIT_GREY, 300, 300, 300))
-    CHECK_ERR(init_color(CLR_DRK_GREY, 600, 600, 600))
-    CHECK_ERR(init_color(CLR_LIT_BLUE, 500, 700, 1000))
-    CHECK_ERR(init_color(CLR_LIT_GREEN, 500, 1000, 500))
-    CHECK_ERR(init_color(CLR_LIT_TURQUOISE, 500, 900, 800))
-    CHECK_ERR(init_color(CLR_LIT_RED, 1000, 500, 500))
-    CHECK_ERR(init_color(CLR_LIT_PINK, 1000, 800, 800))
-    CHECK_ERR(init_color(CLR_LIT_YELLOW, 1000, 1000, 500))
-    CHECK_ERR(init_color(CLR_WHITE, 1000, 1000, 1000))
+    MUST(init_color(CLR_BLACK, 0, 0, 0))
+    MUST(init_color(CLR_BLUE, 0, 0, 1000))
+    MUST(init_color(CLR_GREEN, 0, 1000, 0))
+    MUST(init_color(CLR_TURQUOISE, 250, 900, 800))
+    MUST(init_color(CLR_RED, 1000, 0, 0))
+    MUST(init_color(CLR_PINK, 1000, 100, 500))
+    MUST(init_color(CLR_YELLOW, 1000, 1000, 0))
+    MUST(init_color(CLR_LIT_GREY, 300, 300, 300))
+    MUST(init_color(CLR_DRK_GREY, 600, 600, 600))
+    MUST(init_color(CLR_LIT_BLUE, 500, 700, 1000))
+    MUST(init_color(CLR_LIT_GREEN, 500, 1000, 500))
+    MUST(init_color(CLR_LIT_TURQUOISE, 500, 900, 800))
+    MUST(init_color(CLR_LIT_RED, 1000, 500, 500))
+    MUST(init_color(CLR_LIT_PINK, 1000, 800, 800))
+    MUST(init_color(CLR_LIT_YELLOW, 1000, 1000, 500))
+    MUST(init_color(CLR_WHITE, 1000, 1000, 1000))
 
     for (short i = 0x50; i <= 0x5f; i++) {
-        CHECK_ERR(init_pair(i, i, CLR_BLACK))
+        MUST(init_pair(i, i, CLR_BLACK))
     }
 
-    CHECK_ERR(refresh())
+    MUST(refresh())
     return OK;
 }
 
 int start_window(void) {
     int err;
     initscr();
-    CHECK_ERR(start_colors())
-    CHECK_ERR(keypad(stdscr, TRUE))
-    CHECK_ERR(noecho())
+    MUST(start_colors())
+    MUST(keypad(stdscr, TRUE))
+    MUST(noecho())
     return OK;
 }
 
 int end_window(void) {
     int err;
-    CHECK_ERR(echo())
-    CHECK_ERR(endwin())
+    MUST(echo())
+    MUST(endwin())
     return OK;
 }
 
