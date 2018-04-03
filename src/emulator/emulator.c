@@ -1,9 +1,9 @@
 #define _GNU_SOURCE
 
 #include "emulator.h"
-#include "emulate.h"
-#include "alienos.h"
+#include "syscall.h"
 #include "params.h"
+#include "../alienos/alienos.h"
 #include "../system/convert.h"
 #include "../system/memory.h"
 

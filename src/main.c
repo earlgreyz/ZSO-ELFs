@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 #include "emulator/emulator.h"
-#include "emulator/alienos.h"
+#include "alienos/alienos.h"
 
 int main(int argc, char *argv[]) {
     pid_t pid;

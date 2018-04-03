@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 
 #include "params.h"
-#include "alienos.h"
+#include "../alienos/alienos.h"
 
 #include <stdio.h>
 #include <elf.h>
@@ -20,21 +20,21 @@ static int search_headers(int fd, Elf64_Ehdr *elf_header, off_t *section_start, 
     int result = NO_PARAMS;
 
     Elf64_Phdr *p_headers;
-    size_t p_headers_size = elf_header->e_phentsize * elf_header->e_phnum;
+    size_t p_headers_size = (size_t) elf_header->e_phentsize * elf_header->e_phnum;
     p_headers = (Elf64_Phdr *) malloc(p_headers_size);
     if (p_headers == NULL) {
         return ERR_PARAMS;
     }
 
-    if (pread(fd, p_headers, p_headers_size, elf_header->e_phoff) != p_headers_size) {
+    if (pread(fd, p_headers, p_headers_size, (off_t) elf_header->e_phoff) != (ssize_t) p_headers_size) {
         free(p_headers);
         return ERR_PARAMS;
     }
 
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
         if (p_headers[i].p_type == PT_PARAMS) {
-            *section_start = p_headers[i].p_vaddr;
-            *section_size = p_headers[i].p_filesz;
+            *section_start = (off_t) p_headers[i].p_vaddr;
+            *section_size = (size_t) p_headers[i].p_filesz;
             result = HAS_PARAMS;
             break;
         }

@@ -1,5 +1,5 @@
-#include "emulate.h"
-#include "alienos.h"
+#include "syscall.h"
+#include "../alienos/alienos.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,6 +1,6 @@
 #include "alienos.h"
 #include "../system/random.h"
-#include "../graphics/graphics.h"
+#include "graphics.h"
 
 #include <stdlib.h>
 #include <curses.h>
