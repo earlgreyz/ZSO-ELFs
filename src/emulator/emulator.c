@@ -18,11 +18,11 @@
 
 #define IS_ERR(x) ((x) == -1)
 #define IS_PTRACE_ERR(x) ((x) == -1 && errno)
+#define MIN(x, y) ((x) > (y)? (y): (x))
 
 /// Immediately stops the program execution and prints the error message.
 /// \param message error message.
 static void emulator_failure(const char *message) {
-    end_alienos();
     fprintf(stderr, "%s\n", message);
     exit(EXIT_ALIENOS_FAIL);
 }
@@ -33,29 +33,30 @@ static void emulator_failure(const char *message) {
 /// \param argv argument values.
 /// \return init status (OK|ERR)
 static int init_args(struct alien_proc_struct *child, int argc, char *argv[]) {
-    int arg;
     off_t params;
-    size_t size;
+    size_t size, args;
 
     switch (get_params_address(argv[0], &params, &size)) {
-        case ERR_PARAMS:
-            return -1;
+        case NO_PARAMS:
+            args = 1;
+            break;
         case HAS_PARAMS:
+            args = (size / 4) + 1;
             break;
         default:
-            return 0;
+            return -1;
     }
 
-    size_t args = (size / 4) + 1;
-    if (args > (size_t) argc) {
-        args = (size_t) argc;
+    if (args < (size_t) argc) {
+        fprintf(stderr, "Expected at most %lu argument(s), found %d. Discarding.\n", (args - 1), (argc - 1));
     }
+    args = MIN(args, (size_t) argc);
 
+    int arg;
     for (size_t i = 1; i < args; i++) {
         if (IS_ERR(str_to_int(argv[i], &arg))) {
             return -1;
         }
-
         off_t address = params + (off_t) (i - 1) * (off_t) sizeof(arg);
         if (pwrite(child->mem, &arg, sizeof(arg), address) != (ssize_t) sizeof(arg)) {
             return -1;
@@ -82,10 +83,6 @@ void run_emulator(pid_t pid, int argc, char *argv[]) {
     int status;
     struct alien_proc_struct child = {.pid = pid, .mem = -1};
 
-    if (start_alienos() != 0) {
-        emulator_failure("start_alienos");
-    }
-
     // Wait for child to stop on EXECVE
     pid = waitpid(child.pid, &status, 0);
     if (pid == -1 || WIFEXITED(status)) {
@@ -101,7 +98,12 @@ void run_emulator(pid_t pid, int argc, char *argv[]) {
         emulator_failure("init_args");
     }
 
-    if (IS_PTRACE_ERR(ptrace(PTRACE_SYSCALL, pid, NULL, NULL))) {
+    if (start_alienos() != 0) {
+        emulator_failure("start_alienos");
+    }
+
+    if (IS_PTRACE_ERR(ptrace(PTRACE_SYSCALL, child.pid, NULL, NULL))) {
+        end_alienos();
         emulator_failure("PTRACE_SYSCALL");
     }
 
