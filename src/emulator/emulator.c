@@ -92,10 +92,6 @@ void run_emulator(pid_t pid, int argc, char *argv[]) {
         emulator_failure("waitpid");
     }
 
-    if (IS_PTRACE_ERR(ptrace(PTRACE_SYSCALL, pid, NULL, NULL))) {
-        emulator_failure("PTRACE_SYSCALL");
-    }
-
     if (IS_ERR(child.mem = open_memory(pid))) {
         emulator_failure("open_memory");
     }
@@ -103,6 +99,10 @@ void run_emulator(pid_t pid, int argc, char *argv[]) {
     if (IS_ERR(init_args(&child, argc, argv))) {
         close(child.mem);
         emulator_failure("init_args");
+    }
+
+    if (IS_PTRACE_ERR(ptrace(PTRACE_SYSCALL, pid, NULL, NULL))) {
+        emulator_failure("PTRACE_SYSCALL");
     }
 
     emulate(&child);
