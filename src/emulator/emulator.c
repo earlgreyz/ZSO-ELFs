@@ -102,7 +102,7 @@ void run_emulator(pid_t pid, int argc, char *argv[]) {
         emulator_failure("start_alienos");
     }
 
-    if (IS_PTRACE_ERR(ptrace(PTRACE_SYSCALL, child.pid, NULL, NULL))) {
+    if (IS_PTRACE_ERR(ptrace(PTRACE_SYSEMU, child.pid, NULL, NULL))) {
         end_alienos();
         emulator_failure("PTRACE_SYSCALL");
     }

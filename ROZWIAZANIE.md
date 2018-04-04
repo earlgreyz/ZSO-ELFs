@@ -1,7 +1,7 @@
 # Kompilowanie rozwiązania
 ## Wymagania
 Do skompilowania potrzebne są biblioteka `ncurses` oraz `cmake`. Wersje dostępne
-są w repozytoriach debiana.
+są w repozytoriach Debiana.
 ```
 sudo apt-get update && sudo apt-get -y install libncurses-dev cmake
 ```
